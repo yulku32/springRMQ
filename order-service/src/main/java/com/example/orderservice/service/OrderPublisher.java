@@ -34,16 +34,9 @@ public class OrderPublisher {
                     .setHeader("__TypeId__", Order.class.getName())
                     .build();
 
-            // Send the message
-            rabbitTemplate.send(
-                    RabbitMQConfig.EXCHANGE_NAME,
-                    RabbitMQConfig.ROUTING_KEY,
-                    message
-            );
+            // Send the message - with fanout exchange, routing key is ignored
+            rabbitTemplate.send(RabbitMQConfig.EXCHANGE_NAME, "", message);
 
-            // Debug print
-            System.out.println("Raw message body: " + new String(message.getBody()));
-            System.out.println("Message properties: " + message.getMessageProperties());
             System.out.println("Order Sent: " + order.getOrderId());
 
         } catch (Exception e) {
