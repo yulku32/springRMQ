@@ -5,6 +5,7 @@ import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 @Configuration
 @EnableRabbit
@@ -19,6 +21,7 @@ public class RabbitMQConfig {
     public static final String EXCHANGE_NAME = "orders.exchange";
     public static final String PAYMENT_QUEUE = "orders.payment.queue";
     public static final String INVENTORY_QUEUE = "orders.inventory.queue";
+    public static final String PAYMENT_STATUS_EXCHANGE = "payment.status.exchange";
 
     @Value("${spring.rabbitmq.host:localhost}")
     private String host;
@@ -43,18 +46,23 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public FanoutExchange exchange() {
+    public FanoutExchange ordersExchange() {
         return new FanoutExchange(EXCHANGE_NAME);
     }
 
     @Bean
-    public Binding paymentBinding(@Qualifier("paymentQueue") Queue paymentQueue, FanoutExchange exchange) {
-        return BindingBuilder.bind(paymentQueue).to(exchange);
+    public TopicExchange paymentStatusExchange() {
+        return new TopicExchange(PAYMENT_STATUS_EXCHANGE);
     }
 
     @Bean
-    public Binding inventoryBinding(@Qualifier("inventoryQueue") Queue inventoryQueue, FanoutExchange exchange) {
-        return BindingBuilder.bind(inventoryQueue).to(exchange);
+    public Binding paymentBinding(@Qualifier("paymentQueue") Queue paymentQueue, FanoutExchange ordersExchange) {
+        return BindingBuilder.bind(paymentQueue).to(ordersExchange);
+    }
+
+    @Bean
+    public Binding inventoryBinding(@Qualifier("inventoryQueue") Queue inventoryQueue, FanoutExchange ordersExchange) {
+        return BindingBuilder.bind(inventoryQueue).to(ordersExchange);
     }
 
     @Bean
@@ -71,6 +79,12 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public AmqpAdmin amqpAdmin(ConnectionFactory connectionFactory) {
+        return new RabbitAdmin(connectionFactory);
+    }
+
+    @Bean
+    @Primary
     public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
         RabbitTemplate template = new RabbitTemplate(connectionFactory);
         template.setMessageConverter(jsonMessageConverter());

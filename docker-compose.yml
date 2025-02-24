@@ -22,8 +22,11 @@ services:
       - "8080:8080"
     environment:
       - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_DATA_MONGODB_URI=mongodb://root:example@mongodb:27017/orderdb?authSource=admin
     depends_on:
       rabbitmq:
+        condition: service_healthy
+      mongodb:
         condition: service_healthy
 
   payment-service:
@@ -35,8 +38,11 @@ services:
       - "8081:8081"
     environment:
       - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_DATA_MONGODB_URI=mongodb://root:example@mongodb:27017/paymentdb?authSource=admin
     depends_on:
       rabbitmq:
+        condition: service_healthy
+      mongodb:
         condition: service_healthy
 
   inventory-service:
@@ -48,6 +54,29 @@ services:
       - "8082:8082"
     environment:
       - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_DATA_MONGODB_URI=mongodb://root:example@mongodb:27017/inventorydb?authSource=admin
     depends_on:
       rabbitmq:
         condition: service_healthy
+      mongodb:
+        condition: service_healthy
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27018:27017"  # Changed host port to 27018
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=example
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh mongodb://root:example@localhost:27017/admin --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  mongodb_data:
