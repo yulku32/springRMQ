@@ -21,7 +21,6 @@ public class InventoryProcessor {
     @RabbitListener(queues = RabbitMQConfig.INVENTORY_QUEUE)
     public void processInventory(Message message) {
         try {
-            // Debug information
             System.out.println("Received message in INVENTORY service");
 
             // Convert message body to string for debugging

@@ -21,7 +21,6 @@ public class PaymentProcessor {
     @RabbitListener(queues = RabbitMQConfig.PAYMENT_QUEUE)
     public void processPayment(Message message) {
         try {
-            // Debug information
             System.out.println("Received message in PAYMENT service");
 
             // Convert message body to string for debugging
