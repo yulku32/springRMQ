@@ -22,6 +22,8 @@ public class RabbitMQConfig {
     public static final String PAYMENT_QUEUE = "orders.payment.queue";
     public static final String INVENTORY_QUEUE = "orders.inventory.queue";
     public static final String PAYMENT_STATUS_EXCHANGE = "payment.status.exchange";
+    public static final String PAYMENT_SUCCESS_QUEUE = "payment.success.queue";
+    public static final String PAYMENT_SUCCESS_ROUTING_KEY = "payment.success";
 
     @Value("${spring.rabbitmq.host:localhost}")
     private String host;
@@ -45,6 +47,11 @@ public class RabbitMQConfig {
         return new Queue(INVENTORY_QUEUE, true);
     }
 
+    @Bean("paymentSuccessQueue")
+    public Queue paymentSuccessQueue() {
+        return new Queue(PAYMENT_SUCCESS_QUEUE, true);
+    }
+
     @Bean
     public FanoutExchange ordersExchange() {
         return new FanoutExchange(EXCHANGE_NAME);
@@ -60,9 +67,16 @@ public class RabbitMQConfig {
         return BindingBuilder.bind(paymentQueue).to(ordersExchange);
     }
 
+    // Remove the direct binding between inventory queue and orders exchange
+    // Instead, bind the inventory queue to the payment success queue
+
     @Bean
-    public Binding inventoryBinding(@Qualifier("inventoryQueue") Queue inventoryQueue, FanoutExchange ordersExchange) {
-        return BindingBuilder.bind(inventoryQueue).to(ordersExchange);
+    public Binding paymentSuccessBinding(
+            @Qualifier("paymentSuccessQueue") Queue paymentSuccessQueue,
+            TopicExchange paymentStatusExchange) {
+        return BindingBuilder.bind(paymentSuccessQueue)
+                .to(paymentStatusExchange)
+                .with(PAYMENT_SUCCESS_ROUTING_KEY);
     }
 
     @Bean
@@ -89,6 +103,14 @@ public class RabbitMQConfig {
         RabbitTemplate template = new RabbitTemplate(connectionFactory);
         template.setMessageConverter(jsonMessageConverter());
         template.setExchange(EXCHANGE_NAME);
+        return template;
+    }
+
+    @Bean
+    public RabbitTemplate paymentStatusRabbitTemplate(ConnectionFactory connectionFactory) {
+        RabbitTemplate template = new RabbitTemplate(connectionFactory);
+        template.setMessageConverter(jsonMessageConverter());
+        template.setExchange(PAYMENT_STATUS_EXCHANGE);
         return template;
     }
 

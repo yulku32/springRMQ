@@ -60,6 +60,8 @@ services:
         condition: service_healthy
       mongodb:
         condition: service_healthy
+      payment-service:
+        condition: service_started
 
   mongodb:
     image: mongo:latest
