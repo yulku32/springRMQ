@@ -24,16 +24,19 @@ project-root/
 
 ## Quick Start
 
-1. Clone the repository:
+## Running with pre-built Docker images
+
+The easiest way to run this project is using the pre-built Docker images:
+
 ```bash
+# Clone the repository to get the docker-compose file
 git clone https://github.com/yulku32/springRMQ.git
 cd springRMQ
-```
 
-2. Run with Docker Compose:
-```bash
-docker-compose up --build
-```
+# Pull and run all containers
+docker-compose up
+
+
 
 This will start:
 - RabbitMQ (accessible at http://localhost:15672 - guest/guest)
@@ -185,8 +188,3 @@ docker-compose down -v
    - Verify environment variables in docker-compose.yml
    - Rebuild the service: `docker-compose up -d --build [service-name]`
 
-## Development Notes
-
-- JAR files are included in the repository to allow running without building
-- Each service can be developed and tested independently
-- The common module contains shared models and configurations
