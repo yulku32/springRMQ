@@ -17,27 +17,20 @@
     </properties>
 
     <dependencies>
-        <!-- Spring Boot AMQP (RabbitMQ) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-amqp</artifactId>
-            <version>3.4.3</version>  <!-- ✅ Added version -->
+            <version>3.4.3</version>
         </dependency>
-
-        <!-- Jackson Databind for JSON serialization -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.18.2</version>  <!-- ✅ Added version -->
+            <version>2.18.2</version>
         </dependency>
-
-
-
     </dependencies>
 
     <build>
         <plugins>
-            <!-- Ensure JAR is built correctly -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
